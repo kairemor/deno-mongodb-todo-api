@@ -1,0 +1,29 @@
+###
+GET http://localhost:8080/todos
+
+###
+POST http://localhost:8080/todos
+Content-Type: application/json
+
+{
+  "todo":"learn deno",
+  "isCompleted": false
+}
+###
+GET http://localhost:8080/todos/5ed7890f006659f600b515df
+
+###
+GET http://localhost:8080/todos/5ed786b2007497c200c8e80c
+
+###
+PUT http://localhost:8080/todos/5ed7890f006659f600b515df
+Content-Type: application/json
+
+{
+  "todo":"learn deno and mongo",
+  "isCompleted": true
+}
+###
+DELETE http://localhost:8080/todos/5ed7890f006659f600b515df
+
+###

@@ -18,7 +18,9 @@ export default {
     { request, response }: { request: any; response: any },
   ) => {
     try {
-      const newTodo = await todo.insertOne(request.body);
+      const body = await request.body();
+      console.log(body.value);
+      const newTodo = await todo.insertOne(body.value);
       response.status = 201;
       response.body = {
         success: true,
@@ -33,21 +35,28 @@ export default {
     }
   },
   getTodoById: async (
-    { request, response, params }: {
-      request: any;
+    { response, params }: {
       response: any;
       params: { id: string };
     },
   ) => {
     try {
-      const singleTodo = await todo.findOne({ _id: params.id });
+      const singleTodo = await todo.findOne({ _id: { "$oid": params.id } });
+      if (!singleTodo) {
+        response.status = 404;
+        response.body = {
+          success: false,
+          message: `Id: ${params.id} not found`,
+        };
+        return;
+      }
       response.status = 200;
       response.body = {
         success: true,
         data: singleTodo,
       };
     } catch (error) {
-      response.status = 404;
+      response.status = 401;
       response.body = {
         success: false,
         message: error.toString(),
@@ -62,14 +71,24 @@ export default {
     },
   ) => {
     try {
-      const newTodo = await todo.updateOne(
-        { _id: params.id },
-        { $set: request.body },
+      const body = await request.body();
+      console.log(body);
+      const updateResult = await todo.updateOne(
+        { _id: { "$oid": params.id } },
+        { $set: body.value },
       );
+      if (updateResult.matchedCount == 0) {
+        response.status = 404;
+        response.body = {
+          success: false,
+          message: `Id: ${params.id} not found`,
+        };
+        return;
+      }
       response.status = 200;
       response.body = {
         success: true,
-        data: newTodo,
+        data: updateResult,
       };
     } catch (error) {
       response.status = 404;
@@ -80,17 +99,24 @@ export default {
     }
   },
   deleteTodoById: async (
-    { request, response, params }: {
-      request: any;
+    { response, params }: {
       response: any;
       params: { id: string };
     },
   ) => {
-    const deletedTodo = await todo.deleteOne({ _id: params.id });
+    const deletedTodo = await todo.deleteOne({ _id: { "$oid": params.id } });
+    if (!deletedTodo) {
+      response.status = 404;
+      response.body = {
+        success: false,
+        message: `Id: ${params.id} not found`,
+      };
+      return;
+    }
     response.status = 200;
     response.body = {
       success: true,
-      data: deletedTodo,
+      deleted: deletedTodo,
     };
   },
 };
